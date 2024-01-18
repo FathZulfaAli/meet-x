@@ -19,3 +19,41 @@ model Sample {
 
   @@map("samples") // if you want to use snake_case format
 }
+
+model Customer {
+  customer_id  Int              @unique @default(autoincrement())
+  name         String
+  email        String           @unique
+  password     String
+  ref_code     String           @unique
+  use_ref_code String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  RefCustId    ReferralPoints[] @relation("cust-id")
+  ReferralCode ReferralPoints[] @relation("ref-code")
+
+  @@map("customer")
+}
+
+model EventOrganizer {
+  EventOrganizer_id Int      @unique @default(autoincrement())
+  name              String
+  email             String   @unique
+  password          String
+  organizer_name    String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("event_organizer")
+}
+
+model ReferralPoints {
+  id                Int      @id @unique @default(autoincrement())
+  Customer          Customer @relation(fields: [customer_id], references: [customer_id], "cust-id")
+  customer_id       Int
+  Customer_ref_code Customer @relation(fields: [referral_code], references: [ref_code], "ref-code")
+  referral_code     String
+  expired_date      DateTime
+
+  @@map("referral_points")
+}
