@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
-import { genSalt, hash } from 'bcrypt';
+import { compare, genSalt, hash } from 'bcrypt';
 import { prisma } from '../prisma';
 import { customAlphabet } from 'nanoid';
+import { sign } from 'jsonwebtoken';
 
 export class AuthController {
   async registerCustomer(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, use_ref_code } = req.body;
 
       const checkUser = await prisma.customer.findUnique({
         where: { email },
@@ -15,27 +16,35 @@ export class AuthController {
         throw new Error('Account already exist with this email, Please login');
       }
 
+      // Each new user regist must have generated ref code
       async function generateUniqueCode() {
-        let nanoCustom = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 6); // First generate
+        let nanoCustom = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 6);
         let uniqueCode = nanoCustom();
-        // Check if the generated code already exists in the database
         while (await isCodeExistsInDatabase(uniqueCode)) {
-          uniqueCode = nanoCustom(); // Regenerate again if code exists
+          uniqueCode = nanoCustom();
         }
-        console.log({ uniqueCode });
         return uniqueCode;
       }
 
       async function isCodeExistsInDatabase(code: any) {
-        try {
-          // Check if the code already exists in the database
-          const existingRecord = await prisma.customer.findFirst({
-            where: { ref_code: code },
-          });
+        const existingRecord = await prisma.customer.findFirst({
+          where: { ref_code: code },
+        });
 
-          return !!existingRecord;
-        } catch (error) {
-          next(error);
+        return !!existingRecord;
+      }
+
+      //If client provide used ref code, must check if that code exist
+
+      if (use_ref_code) {
+        const checkUsedCode = await prisma.customer.findUnique({
+          where: {
+            ref_code: req.body.use_ref_code,
+          },
+        });
+
+        if (!checkUsedCode) {
+          throw new Error("Referral number you provide doesn't exist");
         }
       }
 
@@ -50,7 +59,7 @@ export class AuthController {
           email,
           password: hashPassword,
           ref_code: uniqueCode,
-          use_ref_code: req.body.use_ref_code,
+          use_ref_code: use_ref_code,
         },
       });
 
@@ -60,10 +69,37 @@ export class AuthController {
       next(error);
     }
   }
-
-  async registerOrganizer(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email, password, organizer_name } = req.body;
+      const isValidUser = await prisma.customer.findUnique({
+        where: {
+          email: req.body.email,
+        },
+      });
+
+      if (!isValidUser) {
+        throw new Error('Wrong email or password');
+      }
+
+      //comparing hashed password from db with req.body.password
+      const isValidPassword = await compare(
+        req.body.password,
+        isValidUser.password,
+      );
+      if (!isValidPassword) {
+        throw new Error('Wrong email or password');
+      }
+
+      //if user success login, continue create token for a session
+      const jwt = sign(
+        {
+          id: isValidUser.customer_id,
+          email: isValidUser.email,
+          // role: isValidUser.role,
+        },
+        'JCWDOL12-1',
+      );
+      return res.status(200).send('Login success');
     } catch (error) {
       next(error);
     }

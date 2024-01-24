@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,7 +14,7 @@ model Sample {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("samples") // if you want to use snake_case format
+  @@map("samples")
 }
 
 model Customer {
@@ -49,11 +46,36 @@ model EventOrganizer {
 
 model ReferralPoints {
   id                Int      @id @unique @default(autoincrement())
-  Customer          Customer @relation(fields: [customer_id], references: [customer_id], "cust-id")
   customer_id       Int
-  Customer_ref_code Customer @relation(fields: [referral_code], references: [ref_code], "ref-code")
   referral_code     String
   expired_date      DateTime
+  Customer          Customer @relation("cust-id", fields: [customer_id], references: [customer_id])
+  Customer_ref_code Customer @relation("ref-code", fields: [referral_code], references: [ref_code])
 
+  @@index([customer_id], map: "referral_points_customer_id_fkey")
+  @@index([referral_code], map: "referral_points_referral_code_fkey")
   @@map("referral_points")
+}
+
+model auth {
+  id       Int    @id @unique(map: "id") @default(autoincrement())
+  email    String @unique(map: "email") @db.VarChar(255)
+  password String @db.VarChar(255)
+  role     Role
+}
+
+model eventOrganizer {
+  eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
+  first_name   String    @db.VarChar(255)
+  last_name    String?   @db.VarChar(255)
+  company_name String    @db.VarChar(255)
+  email        String    @unique(map: "email") @db.VarChar(255)
+  password     String    @db.VarChar(255)
+  created_at   DateTime  @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+}
+
+enum Role {
+  Customer
+  Seller
 }

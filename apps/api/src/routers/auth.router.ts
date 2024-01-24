@@ -1,4 +1,4 @@
-import { AuthController } from '@/controllers/auth.controller';
+import { AuthController } from '../controllers/auth.controller';
 import { Router } from 'express';
 
 export class AuthRouter {
@@ -14,6 +14,7 @@ export class AuthRouter {
   //need to add verifyHash to login
   private initializeRouter(): void {
     this.router.post('/regist-cust', this.authController.registerCustomer);
+    this.router.post('/login', this.authController.login);
   }
 
   getRouter(): Router {
