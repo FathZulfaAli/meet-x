@@ -14,5 +14,6 @@ module.exports = {
       },
     },
   },
-  plugins: [],
-}
+
+  plugins: [require('tw-elements-react/dist/plugin.cjs')],
+};
