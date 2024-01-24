@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,12 +7,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sample {
-  id        Int      @id @default(autoincrement())
-  name      String
-  code      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Customer {
+  customer_id                                          Int            @id @unique(map: "customer_id") @default(autoincrement())
+  auth_id                                              Int?
+  first_name                                           String         @db.VarChar(255)
+  last_name                                            String?        @db.VarChar(255)
+  used_ref_code                                        String?        @db.VarChar(255)
+  ref_code                                             String         @unique(map: "ref_code") @db.VarChar(255)
+  created_at                                           DateTime       @default(now()) @db.Timestamp(0)
+  updated_at                                           DateTime?      @db.Timestamp(0)
+  auth                                                 auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
+  referralCode_referralCode_rc_providerTocustomer      referralCode[] @relation("referralCode_rc_providerTocustomer")
+  referralCode_referralCode_user_provided_rcTocustomer referralCode[] @relation("referralCode_user_provided_rcTocustomer")
 
-  @@map("samples") // if you want to use snake_case format
+  @@index([auth_id], map: "auth_id")
+  @@map("customer")
+}
+
+model auth {
+  id             Int              @unique(map: "id") @default(autoincrement())
+  email          String           @unique(map: "email") @db.VarChar(255)
+  password       String           @db.VarChar(255)
+  role           auth_role        @default(customer)
+  customer       Customer[]
+  eventOrganizer eventOrganizer[]
+
+  @@id([id, email])
+}
+
+model eventOrganizer {
+  eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
+  auth_id      Int?
+  first_name   String    @db.VarChar(255)
+  last_name    String?   @db.VarChar(255)
+  company_name String    @db.VarChar(255)
+  created_at   DateTime  @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  auth         auth?     @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "eventorganizer_ibfk_1")
+
+  @@index([auth_id], map: "auth_id")
+}
+
+model referralCode {
+  ref_log_id                                       Int       @id @unique(map: "ref_log_id") @default(autoincrement())
+  rc_provider                                      Int?
+  user_provided_rc                                 Int?
+  created_at                                       DateTime  @default(now()) @db.Timestamp(0)
+  expired_at                                       DateTime? @db.Timestamp(0)
+  customer_referralCode_rc_providerTocustomer      Customer? @relation("referralCode_rc_providerTocustomer", fields: [rc_provider], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_1")
+  customer_referralCode_user_provided_rcTocustomer Customer? @relation("referralCode_user_provided_rcTocustomer", fields: [user_provided_rc], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_2")
+
+  @@index([rc_provider], map: "rc_provider")
+  @@index([user_provided_rc], map: "user_provided_rc")
+}
+
+enum auth_role {
+  customer
+  Seller
 }
