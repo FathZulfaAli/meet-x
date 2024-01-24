@@ -7,9 +7,10 @@ import { sign } from 'jsonwebtoken';
 export class AuthController {
   async registerCustomer(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email, password, use_ref_code } = req.body;
+      const { email, password, first_name, last_name, used_ref_code } =
+        req.body;
 
-      const checkUser = await prisma.customer.findUnique({
+      const checkUser = await prisma.auth.findUnique({
         where: { email },
       });
       if (checkUser) {
@@ -36,7 +37,7 @@ export class AuthController {
 
       //If client provide used ref code, must check if that code exist
 
-      if (use_ref_code) {
+      if (req.body.use_ref_code) {
         const checkUsedCode = await prisma.customer.findUnique({
           where: {
             ref_code: req.body.use_ref_code,
@@ -53,25 +54,37 @@ export class AuthController {
       const salt = await genSalt();
       const hashPassword = await hash(password, salt);
 
-      const newUser = await prisma.customer.create({
+      const newUser = await prisma.auth.create({
         data: {
-          name,
           email,
           password: hashPassword,
-          ref_code: uniqueCode,
-          use_ref_code: use_ref_code,
+          role: req.body.role,
         },
       });
 
+      const profileUser = await prisma.customer.create({
+        data: {
+          first_name,
+          last_name,
+          used_ref_code,
+          ref_code: uniqueCode,
+        },
+      });
+
+      // CREATE REGIST USER PROFILE HERE
+
       // CREATE REFPOINT LOGIC HERE
-      return res.status(201).send({ success: true, result: newUser });
+      return res.status(201).send({
+        success: true,
+        result: { auth: newUser, profile: profileUser },
+      });
     } catch (error) {
       next(error);
     }
   }
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const isValidUser = await prisma.customer.findUnique({
+      const isValidUser = await prisma.auth.findUnique({
         where: {
           email: req.body.email,
         },
@@ -93,9 +106,9 @@ export class AuthController {
       //if user success login, continue create token for a session
       const jwt = sign(
         {
-          id: isValidUser.customer_id,
+          id: isValidUser.id,
           email: isValidUser.email,
-          // role: isValidUser.role,
+          role: isValidUser.role,
         },
         'JCWDOL12-1',
       );
