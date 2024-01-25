@@ -1,12 +1,28 @@
+import { prisma } from '@/prisma';
 import { NextFunction, Request, Response } from 'express';
 
-import prisma from '@/prisma';
-import { NextRequest } from 'next/server';
-
-export class eventsController {
-  async getEvents(req: Request, res: Response, next: NextFunction) {
+export class CreateEventsController {
+  async createEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const events = await prisma.event.findMany();
+      const newEvent = await prisma.event.create({
+        data: {
+          tittle: req.body.title,
+          created_by: req.body.created_by,
+          description: req.body.description,
+          img: req.body.img,
+          date_event: req.body.date_event,
+          price_type: req.body.price_type,
+          price: req.body.price,
+          place: req.body.place,
+          seats: req.body.seats,
+          terms: req.body.terms,
+          time: req.body.time,
+          rating: req.body.rating,
+          available: req.body.available,
+        },
+      });
+
+      return res.status(201).send({ success: true, data: newEvent });
     } catch (error) {
       next(error);
     }

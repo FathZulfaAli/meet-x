@@ -1,20 +1,18 @@
-import { eventsController } from '@/controllers/events.controllers';
+import { CreateEventsController } from '@/controllers/events.controllers';
 import { Router } from 'express';
 
-export class EventRouter {
+export class CreateEventsRouter {
   private router: Router;
-  private eventsController: eventsController;
+  private createEvents: CreateEventsController;
 
   constructor() {
-    this.eventsController = new eventsController();
+    this.createEvents = new CreateEventsController();
     this.router = Router();
-    this.initializeRoutes();
+    this.initializeRouter();
   }
 
-  private initializeRoutes(): void {
-    this.router.get('/', this.eventsController.getEvents);
-    // this.router.get('/:id', this.sampleController.getSampleDataById);
-    // this.router.post('/', this.sampleController.createSampleData);
+  private initializeRouter(): void {
+    this.router.post('/create-event', this.createEvents.createEvent);
   }
 
   getRouter(): Router {

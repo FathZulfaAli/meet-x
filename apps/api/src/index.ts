@@ -1,8 +1,10 @@
 import App from './app';
+import { prisma } from './prisma';
 
 const main = () => {
-  // init db here
-
+  async () => {
+    await prisma.$connect();
+  };
   const app = new App();
   app.start();
 };
