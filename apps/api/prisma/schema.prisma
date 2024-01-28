@@ -70,3 +70,33 @@ model cronLog {
   status     String
   created_at DateTime @default(now()) @db.Timestamp(0)
 }
+
+model Event {
+  id          Int         @id @default(autoincrement())
+  tittle      String
+  created_by  Int
+  description String      @db.Text
+  img         String
+  date_event  DateTime
+  price_type  EventType
+  price       Int
+  place       String
+  seats       Int
+  terms       String
+  time        String
+  rating      Float
+  available   EventStatus
+
+  createAt  DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+enum EventType {
+  FREE
+  PAID
+}
+
+enum EventStatus {
+  AVAILABE
+  UNAVAILABLE
+}
