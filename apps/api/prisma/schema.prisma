@@ -8,17 +8,18 @@ datasource db {
 }
 
 model Customer {
-  customer_id                                          Int            @id @unique(map: "customer_id") @default(autoincrement())
-  auth_id                                              Int?
-  first_name                                           String         @db.VarChar(255)
-  last_name                                            String?        @db.VarChar(255)
-  used_ref_code                                        String?        @db.VarChar(255)
-  ref_code                                             String         @unique(map: "ref_code") @db.VarChar(255)
-  created_at                                           DateTime       @default(now()) @db.Timestamp(0)
-  updated_at                                           DateTime?      @db.Timestamp(0)
-  auth                                                 auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
-  referralCode_referralCode_rc_providerTocustomer      referralCode[] @relation("referralCode_rc_providerTocustomer")
-  referralCode_referralCode_user_provided_rcTocustomer referralCode[] @relation("referralCode_user_provided_rcTocustomer")
+  customer_id   Int            @id @unique(map: "customer_id") @default(autoincrement())
+  auth_id       Int?
+  first_name    String         @db.VarChar(255)
+  last_name     String?        @db.VarChar(255)
+  used_ref_code String?        @db.VarChar(6)
+  ref_code      String         @unique(map: "ref_code") @db.VarChar(6)
+  amouth_points Int?
+  isDiscount    Boolean        @default(false)
+  created_at    DateTime       @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?      @db.Timestamp(0)
+  auth          auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
+  referralCode  referralCode[]
 
   @@index([auth_id], map: "auth_id")
   @@map("customer")
@@ -49,16 +50,14 @@ model eventOrganizer {
 }
 
 model referralCode {
-  ref_log_id                                       Int       @id @unique(map: "ref_log_id") @default(autoincrement())
-  rc_provider                                      Int?
-  user_provided_rc                                 Int?
-  created_at                                       DateTime  @default(now()) @db.Timestamp(0)
-  expired_at                                       DateTime? @db.Timestamp(0)
-  customer_referralCode_rc_providerTocustomer      Customer? @relation("referralCode_rc_providerTocustomer", fields: [rc_provider], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_1")
-  customer_referralCode_user_provided_rcTocustomer Customer? @relation("referralCode_user_provided_rcTocustomer", fields: [user_provided_rc], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_2")
+  ref_log_id   Int       @id @unique(map: "ref_log_id") @default(autoincrement())
+  rc_provider  Int?
+  amount_Point Int
+  created_at   DateTime  @default(now()) @db.Timestamp(0)
+  expired_at   DateTime? @db.Timestamp(0)
+  ref_code     Customer? @relation(fields: [rc_provider], references: [customer_id])
 
   @@index([rc_provider], map: "rc_provider")
-  @@index([user_provided_rc], map: "user_provided_rc")
 }
 
 enum auth_role {
@@ -66,25 +65,32 @@ enum auth_role {
   Seller
 }
 
+model cronLog {
+  log_id     Int      @id @unique(map: "log_id") @default(autoincrement())
+  status     String
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
 model Event {
-  id          Int @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   tittle      String
-  created_by Int
-  description String @db.Text
-  img String
-  date_event DateTime
-  price_type EventType
+  created_by  Int
+  description String      @db.Text
+  img         String
+  date_event  DateTime
+  price_type  EventType
   price       Int
-  place String
-  seats Int
-  terms String
+  place       String
+  seats       Int
+  terms       String
   time        String
   rating      Float
   available   EventStatus
 
-  createAt    DateTime @default(now())
-  updatedAt   DateTime? @updatedAt 
+  createAt  DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
+
 enum EventType {
   FREE
   PAID

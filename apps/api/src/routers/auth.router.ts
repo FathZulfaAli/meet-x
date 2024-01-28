@@ -1,3 +1,4 @@
+import { registCustValidator } from '@/middleware/registCustValidator';
 import { AuthController } from '../controllers/auth.controller';
 import { Router } from 'express';
 
@@ -11,9 +12,12 @@ export class AuthRouter {
     this.initializeRouter();
   }
 
-  //need to add verifyHash to login
   private initializeRouter(): void {
-    this.router.post('/regist-cust', this.authController.registerCustomer);
+    this.router.post(
+      '/regist-cust',
+      registCustValidator,
+      this.authController.registerCustomer,
+    );
     this.router.post('/login', this.authController.login);
   }
 

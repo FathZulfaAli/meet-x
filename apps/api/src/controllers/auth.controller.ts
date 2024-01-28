@@ -36,13 +36,14 @@ export class AuthController {
       }
 
       //If client provide used ref code, must check if that code exist
-
-      if (req.body.use_ref_code) {
+      let isDiscount = false;
+      if (req.body.used_ref_code) {
         const checkUsedCode = await prisma.customer.findUnique({
           where: {
-            ref_code: req.body.use_ref_code,
+            ref_code: req.body.used_ref_code,
           },
         });
+        isDiscount = true; //if used code is exist => set isDiscount true
 
         if (!checkUsedCode) {
           throw new Error("Referral number you provide doesn't exist");
@@ -62,21 +63,65 @@ export class AuthController {
         },
       });
 
+      const authId = newUser.id;
+
       const profileUser = await prisma.customer.create({
         data: {
+          auth: {
+            connect: {
+              id: authId,
+            },
+          },
           first_name,
           last_name,
           used_ref_code,
+          isDiscount: isDiscount,
           ref_code: uniqueCode,
         },
       });
 
-      // CREATE REGIST USER PROFILE HERE
+      // Ref code user and provider each will grant with reward
+      let response;
+      if (req.body.used_ref_code) {
+        const custRefId = await prisma.customer.findUnique({
+          where: {
+            ref_code: req.body.used_ref_code,
+          },
+        });
 
-      // CREATE REFPOINT LOGIC HERE
+        async function expirationDate() {
+          const expirationDate = new Date();
+          expirationDate.setMonth(expirationDate.getMonth() + 3);
+          return expirationDate;
+        }
+        const pointExpired = await expirationDate();
+
+        const addPoints = await prisma.referralCode.create({
+          data: {
+            ref_code: {
+              connect: {
+                customer_id: custRefId?.customer_id,
+              },
+            },
+
+            amount_Point: 10000,
+            expired_at: pointExpired,
+          },
+        });
+        response = {
+          success: true,
+          result: { auth: newUser, profile: profileUser, ref: addPoints },
+        };
+      } else {
+        response = {
+          success: true,
+          result: { auth: newUser, profile: profileUser },
+        };
+      }
+
       return res.status(201).send({
         success: true,
-        result: { auth: newUser, profile: profileUser },
+        result: { response },
       });
     } catch (error) {
       next(error);
@@ -112,7 +157,11 @@ export class AuthController {
         },
         'JCWDOL12-1',
       );
-      return res.status(200).send('Login success');
+      return res.status(200).send('Login success').cookie('token', jwt, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 3600000,
+      });
     } catch (error) {
       next(error);
     }
