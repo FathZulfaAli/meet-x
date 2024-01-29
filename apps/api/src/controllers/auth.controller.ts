@@ -3,6 +3,7 @@ import { compare, genSalt, hash } from 'bcrypt';
 import { prisma } from '../prisma';
 import { customAlphabet } from 'nanoid';
 import { sign } from 'jsonwebtoken';
+import Cookies from 'js-cookie';
 
 export class AuthController {
   async registerCustomer(req: Request, res: Response, next: NextFunction) {
@@ -127,6 +128,51 @@ export class AuthController {
       next(error);
     }
   }
+
+  async registEo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password, first_name, last_name, company_name } = req.body;
+      const checkUser = await prisma.auth.findUnique({
+        where: {
+          email: email,
+        },
+      });
+      if (checkUser) {
+        throw new Error('Account already exist with this email, Please login');
+      }
+
+      const salt = await genSalt();
+      const hashPassword = await hash(password, salt);
+
+      const newUser = await prisma.auth.create({
+        data: {
+          email,
+          password: hashPassword,
+          role: req.body.role,
+        },
+      });
+
+      const authId = newUser.id;
+
+      const profileEo = await prisma.eventOrganizer.create({
+        data: {
+          auth: {
+            connect: {
+              id: authId,
+            },
+          },
+          first_name,
+          last_name,
+          company_name,
+        },
+      });
+
+      return res.status(201).send(profileEo);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const isValidUser = await prisma.auth.findUnique({
@@ -157,11 +203,21 @@ export class AuthController {
         },
         'JCWDOL12-1',
       );
-      return res.status(200).send('Login success').cookie('token', jwt, {
-        httpOnly: true,
-        secure: true,
-        maxAge: 3600000,
+
+      Cookies.set('token', jwt, { domain: 'example.com' });
+      return res.status(200).send('Login success').header(jwt);
+    } catch (error) {
+      next(error);
+    }
+  }
+  async getRole(req: Request, res: Response, next: NextFunction) {
+    try {
+      const getRole = await prisma.auth.findUnique({
+        where: {
+          email: req.body.email,
+        },
       });
+      return res.status(201).send({ role: getRole?.role });
     } catch (error) {
       next(error);
     }
