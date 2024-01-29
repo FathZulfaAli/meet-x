@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import Cookies from 'js-cookie';
 import { verify } from 'jsonwebtoken';
 
 declare global {
@@ -15,7 +16,7 @@ export const verifyToken = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.cookies.token;
+    const token = Cookies.get('token');
 
     if (!token) {
       return res

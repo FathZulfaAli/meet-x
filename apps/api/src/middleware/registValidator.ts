@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 
-export const registCustValidator = [
+export const registValidator = [
   body('first_name').notEmpty().withMessage('Please provide your name'),
   body('email').notEmpty().withMessage('Email is required'),
   body('email').isEmail().withMessage('Wrong email format'),
