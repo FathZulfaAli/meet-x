@@ -28,11 +28,11 @@ export default function RegisterEo() {
       setOpenToast(true);
 
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/login/login-eo';
       }, 3000);
     } catch (error) {
       setSuccessMessage('');
-      setErrorMessage(`Error ${error}`);
+      setErrorMessage(`Error ${error.response.data}`);
       setOpenToast(true);
     }
   };

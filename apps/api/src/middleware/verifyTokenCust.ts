@@ -10,13 +10,14 @@ declare global {
   }
 }
 
-export const verifyToken = async (
+export const verifyTokenCust = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const token = Cookies.get('token');
+    // const token = Cookies.get('token');
+    const token = req.body.token;
 
     if (!token) {
       return res
@@ -25,6 +26,10 @@ export const verifyToken = async (
     }
     const verifiedToken = verify(token, 'JCWDOL12-1');
     req.dataUser = verifiedToken;
+    if (req.dataUser.role !== 'customer') {
+      throw new Error("You're not authorized to visit this page");
+    }
+
     next();
   } catch (error) {
     next(error);

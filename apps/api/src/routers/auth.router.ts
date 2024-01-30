@@ -1,7 +1,6 @@
 import { registValidator } from '@/middleware/registValidator';
 import { AuthController } from '../controllers/auth.controller';
 import { Router } from 'express';
-import { verifyToken } from '@/middleware/verifyToken';
 
 export class AuthRouter {
   private router: Router;

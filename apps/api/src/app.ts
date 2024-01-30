@@ -11,6 +11,7 @@ import { PORT } from './config';
 import { AuthRouter } from './routers/auth.router';
 import cron from 'node-cron';
 import { expiredPointsSchedule } from './helpers/expiredPoinrs';
+import { TransactionsRouter } from './routers/transactions.router';
 
 export default class App {
   readonly app: Express;
@@ -30,8 +31,10 @@ export default class App {
 
   private routes(): void {
     const authRouter = new AuthRouter();
+    const transactionsRouter = new TransactionsRouter();
 
     this.app.use('/auth', authRouter.getRouter());
+    this.app.use('/buy', transactionsRouter.getRouter());
   }
 
   private handleError(): void {
