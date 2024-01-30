@@ -4,11 +4,10 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:root@localhost:3306/mydb"
+  url      = env("DATABASE_URL")
 }
 
 model Customer {
-
   customer_id   Int            @id @unique(map: "customer_id") @default(autoincrement())
   auth_id       Int?           @unique(map: "auth_id")
   first_name    String         @db.VarChar(255)
@@ -21,23 +20,19 @@ model Customer {
   isDiscount    Boolean        @default(false)
   auth          auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
   referralCode  referralCode[]
-
-
-
-  @@index([auth_id], map: "auth_id")
+  trannsaction  transaction[]
 
   @@map("customer")
 }
 
 model auth {
-  id             Int              @unique(map: "id") @default(autoincrement())
-  email          String           @unique(map: "email") @db.VarChar(255)
-  password       String           @db.VarChar(255)
-  role           auth_role        @default(customer)
+  id       Int       @unique(map: "id") @default(autoincrement())
+  email    String    @unique(map: "email") @db.VarChar(255)
+  password String    @db.VarChar(255)
+  role     auth_role @default(customer)
 
-  customer       Customer?
-  eventOrganizer eventOrganizer[]
-
+  customer       Customer[]
+  eventOrganizer eventorganizer[]
 
   @@id([id, email])
 }
@@ -53,12 +48,12 @@ model Sample {
 }
 
 model event {
-  id          Int              @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   tittle      String
-  description String           @db.Text
+  description String         @db.Text
   img         String
   date_event  String
-  price_type  event_price_type
+  price_type  EventType
   price       Int
   place       String
   seats       Int
@@ -66,8 +61,8 @@ model event {
   time        String
   rating      Float?
   category    event_category
-  available   Boolean          @default(true)
-  createAt    DateTime         @default(now())
+  available   Boolean        @default(true)
+  createAt    DateTime       @default(now())
   updatedAt   DateTime?
   transaction transaction[]
 }
@@ -85,8 +80,6 @@ model eventorganizer {
   @@index([auth_id], map: "fk_auth_eventOrganizer")
 }
 
-
-
 model referralCode {
   ref_log_id   Int       @id @unique(map: "ref_log_id") @default(autoincrement())
   rc_provider  Int?
@@ -95,11 +88,8 @@ model referralCode {
   amount_Point Int
   ref_code     Customer? @relation(fields: [rc_provider], references: [customer_id])
 
-
   @@index([rc_provider], map: "rc_provider")
 }
-
-
 
 model transaction {
   id              Int      @id @default(autoincrement())
@@ -118,39 +108,15 @@ model transaction {
   @@index([customer_id], map: "Transaction_customer_id_fkey")
 }
 
-
-
 enum auth_role {
   customer
   Seller
 }
 
-
-
 model cronLog {
   log_id     Int      @id @unique(map: "log_id") @default(autoincrement())
   status     String
   created_at DateTime @default(now()) @db.Timestamp(0)
-}
-
-model Event {
-  id          Int         @id @default(autoincrement())
-  tittle      String
-  created_by  Int
-  description String      @db.Text
-  img         String
-  date_event  DateTime
-  price_type  EventType
-  price       Int
-  place       String
-  seats       Int
-  terms       String
-  time        String
-  rating      Float
-  available   EventStatus
-
-  createAt  DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
 }
 
 enum EventType {
@@ -163,6 +129,4 @@ enum event_category {
   Concert
   Seminar
   Competition
-
-
 }
