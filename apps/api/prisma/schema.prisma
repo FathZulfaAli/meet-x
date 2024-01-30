@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:root@localhost:3306/mydb"
 }
 
 model Customer {
@@ -17,8 +17,9 @@ model Customer {
   created_at                                           DateTime       @default(now()) @db.Timestamp(0)
   updated_at                                           DateTime?      @db.Timestamp(0)
   auth                                                 auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
-  referralCode_referralCode_rc_providerTocustomer      referralCode[] @relation("referralCode_rc_providerTocustomer")
-  referralCode_referralCode_user_provided_rcTocustomer referralCode[] @relation("referralCode_user_provided_rcTocustomer")
+  referralcode_referralcode_rc_providerTocustomer      referralcode[] @relation("referralcode_rc_providerTocustomer")
+  referralcode_referralcode_user_provided_rcTocustomer referralcode[] @relation("referralcode_user_provided_rcTocustomer")
+  transaction                                          transaction[]
 
   @@index([auth_id], map: "auth_id")
   @@map("customer")
@@ -30,12 +31,42 @@ model auth {
   password       String           @db.VarChar(255)
   role           auth_role        @default(customer)
   customer       Customer[]
-  eventOrganizer eventOrganizer[]
+  eventorganizer eventorganizer[]
 
   @@id([id, email])
 }
 
-model eventOrganizer {
+model Sample {
+  id        Int       @id @default(autoincrement())
+  name      String
+  code      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("samples")
+}
+
+model event {
+  id          Int              @id @default(autoincrement())
+  tittle      String
+  description String           @db.Text
+  img         String
+  date_event  String
+  price_type  event_price_type
+  price       Int
+  place       String
+  seats       Int
+  terms       String
+  time        String
+  rating      Float?
+  category    event_category
+  available   Boolean          @default(true)
+  createAt    DateTime         @default(now())
+  updatedAt   DateTime?
+  transaction transaction[]
+}
+
+model eventorganizer {
   eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
   auth_id      Int?
   first_name   String    @db.VarChar(255)
@@ -48,49 +79,51 @@ model eventOrganizer {
   @@index([auth_id], map: "auth_id")
 }
 
-model referralCode {
+model referralcode {
   ref_log_id                                       Int       @id @unique(map: "ref_log_id") @default(autoincrement())
   rc_provider                                      Int?
   user_provided_rc                                 Int?
   created_at                                       DateTime  @default(now()) @db.Timestamp(0)
   expired_at                                       DateTime? @db.Timestamp(0)
-  customer_referralCode_rc_providerTocustomer      Customer? @relation("referralCode_rc_providerTocustomer", fields: [rc_provider], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_1")
-  customer_referralCode_user_provided_rcTocustomer Customer? @relation("referralCode_user_provided_rcTocustomer", fields: [user_provided_rc], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_2")
+  customer_referralcode_rc_providerTocustomer      Customer? @relation("referralcode_rc_providerTocustomer", fields: [rc_provider], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_1")
+  customer_referralcode_user_provided_rcTocustomer Customer? @relation("referralcode_user_provided_rcTocustomer", fields: [user_provided_rc], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "referralcode_ibfk_2")
 
   @@index([rc_provider], map: "rc_provider")
   @@index([user_provided_rc], map: "user_provided_rc")
 }
+
+model transaction {
+  id              Int      @id @default(autoincrement())
+  EventId         Int
+  customer_id     Int
+  date            DateTime
+  amountPaid      Int?
+  discountApplied Int?
+  pointUsed       Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  event           event    @relation(fields: [EventId], references: [id], map: "Transaction_EventId_fkey")
+  customer        Customer @relation(fields: [customer_id], references: [customer_id], map: "Transaction_customer_id_fkey")
+
+  @@index([EventId], map: "Transaction_EventId_fkey")
+  @@index([customer_id], map: "Transaction_customer_id_fkey")
+}
+
+
 
 enum auth_role {
   customer
   Seller
 }
 
-model Event {
-  id          Int @id @default(autoincrement())
-  tittle      String
-  created_by Int
-  description String @db.Text
-  img String
-  date_event DateTime
-  price_type EventType
-  price       Int
-  place String
-  seats Int
-  terms String
-  time        String
-  rating      Float
-  available   EventStatus
-
-  createAt    DateTime @default(now())
-  updatedAt   DateTime? @updatedAt 
-}
-enum EventType {
+enum event_price_type {
   FREE
   PAID
 }
 
-enum EventStatus {
-  AVAILABE
-  UNAVAILABLE
+enum event_category {
+  Sport
+  Concert
+  Seminar
+  Competition
 }
