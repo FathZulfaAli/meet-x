@@ -4,10 +4,11 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:root@localhost:3306/mydb"
 }
 
 model Customer {
+
   customer_id   Int            @id @unique(map: "customer_id") @default(autoincrement())
   auth_id       Int?
   first_name    String         @db.VarChar(255)
@@ -21,6 +22,7 @@ model Customer {
   auth          auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
   referralCode  referralCode[]
 
+
   @@index([auth_id], map: "auth_id")
   @@map("customer")
 }
@@ -31,12 +33,42 @@ model auth {
   password       String           @db.VarChar(255)
   role           auth_role        @default(customer)
   customer       Customer[]
-  eventOrganizer eventOrganizer[]
+  eventorganizer eventorganizer[]
 
   @@id([id, email])
 }
 
-model eventOrganizer {
+model Sample {
+  id        Int       @id @default(autoincrement())
+  name      String
+  code      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("samples")
+}
+
+model event {
+  id          Int              @id @default(autoincrement())
+  tittle      String
+  description String           @db.Text
+  img         String
+  date_event  String
+  price_type  event_price_type
+  price       Int
+  place       String
+  seats       Int
+  terms       String
+  time        String
+  rating      Float?
+  category    event_category
+  available   Boolean          @default(true)
+  createAt    DateTime         @default(now())
+  updatedAt   DateTime?
+  transaction transaction[]
+}
+
+model eventorganizer {
   eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
   auth_id      Int?
   first_name   String    @db.VarChar(255)
@@ -49,6 +81,8 @@ model eventOrganizer {
   @@index([auth_id], map: "auth_id")
 }
 
+
+
 model referralCode {
   ref_log_id   Int       @id @unique(map: "ref_log_id") @default(autoincrement())
   rc_provider  Int?
@@ -57,13 +91,34 @@ model referralCode {
   expired_at   DateTime? @db.Timestamp(0)
   ref_code     Customer? @relation(fields: [rc_provider], references: [customer_id])
 
+
   @@index([rc_provider], map: "rc_provider")
 }
+
+model transaction {
+  id              Int      @id @default(autoincrement())
+  EventId         Int
+  customer_id     Int
+  date            DateTime
+  amountPaid      Int?
+  discountApplied Int?
+  pointUsed       Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  event           event    @relation(fields: [EventId], references: [id], map: "Transaction_EventId_fkey")
+  customer        Customer @relation(fields: [customer_id], references: [customer_id], map: "Transaction_customer_id_fkey")
+
+  @@index([EventId], map: "Transaction_EventId_fkey")
+  @@index([customer_id], map: "Transaction_customer_id_fkey")
+}
+
+
 
 enum auth_role {
   customer
   Seller
 }
+
 
 model cronLog {
   log_id     Int      @id @unique(map: "log_id") @default(autoincrement())
@@ -96,7 +151,10 @@ enum EventType {
   PAID
 }
 
-enum EventStatus {
-  AVAILABE
-  UNAVAILABLE
+enum event_category {
+  Sport
+  Concert
+  Seminar
+  Competition
+
 }
