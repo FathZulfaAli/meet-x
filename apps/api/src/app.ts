@@ -9,9 +9,11 @@ import express, {
 import cors from 'cors';
 import { PORT } from './config';
 import { AuthRouter } from './routers/auth.router';
+import { CreateEventsRouter } from './routers/events.routers';
 import cron from 'node-cron';
 import { expiredPointsSchedule } from './helpers/expiredPoinrs';
 import { TransactionsRouter } from './routers/transactions.router';
+
 
 export default class App {
   readonly app: Express;
@@ -32,9 +34,12 @@ export default class App {
   private routes(): void {
     const authRouter = new AuthRouter();
     const transactionsRouter = new TransactionsRouter();
+    const createEventsRouter = new CreateEventsRouter();
 
     this.app.use('/auth', authRouter.getRouter());
     this.app.use('/buy', transactionsRouter.getRouter());
+    this.app.use('/events', createEventsRouter.getRouter());
+
   }
 
   private handleError(): void {
