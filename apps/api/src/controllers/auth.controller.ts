@@ -29,7 +29,7 @@ export class AuthController {
       }
 
       async function isCodeExistsInDatabase(code: any) {
-        const existingRecord = await prisma.customer.findFirst({
+        const existingRecord = await prisma.customer.findUnique({
           where: { ref_code: code },
         });
 
@@ -185,6 +185,24 @@ export class AuthController {
         throw new Error('Wrong email or password');
       }
 
+      const authId = isValidUser.id;
+
+      let getProfile;
+
+      if (isValidUser.role === 'customer') {
+        getProfile = await prisma.customer.findUnique({
+          where: {
+            auth_id: authId,
+          },
+        });
+      } else if (isValidUser.role === 'Seller') {
+        getProfile = await prisma.eventOrganizer.findUnique({
+          where: {
+            auth_id: authId,
+          },
+        });
+      }
+
       //comparing hashed password from db with req.body.password
       const isValidPassword = await compare(
         req.body.password,
@@ -200,12 +218,13 @@ export class AuthController {
           id: isValidUser.id,
           email: isValidUser.email,
           role: isValidUser.role,
+          profile: getProfile,
         },
         'JCWDOL12-1',
       );
 
-      Cookies.set('token', jwt, { domain: 'example.com' });
-      return res.status(200).send('Login success').header(jwt);
+      // Cookies.set('token', jwt, { domain: 'example.com' });
+      return res.status(200).send({ success: true, token: jwt });
     } catch (error) {
       next(error);
     }

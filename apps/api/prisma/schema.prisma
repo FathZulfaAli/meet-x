@@ -10,20 +10,22 @@ datasource db {
 model Customer {
 
   customer_id   Int            @id @unique(map: "customer_id") @default(autoincrement())
-  auth_id       Int?
+  auth_id       Int?           @unique(map: "auth_id")
   first_name    String         @db.VarChar(255)
   last_name     String?        @db.VarChar(255)
   used_ref_code String?        @db.VarChar(6)
   ref_code      String         @unique(map: "ref_code") @db.VarChar(6)
-  amouth_points Int?
-  isDiscount    Boolean        @default(false)
   created_at    DateTime       @default(now()) @db.Timestamp(0)
   updated_at    DateTime?      @db.Timestamp(0)
+  amouth_points Int?
+  isDiscount    Boolean        @default(false)
   auth          auth?          @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
   referralCode  referralCode[]
 
 
+
   @@index([auth_id], map: "auth_id")
+
   @@map("customer")
 }
 
@@ -32,8 +34,10 @@ model auth {
   email          String           @unique(map: "email") @db.VarChar(255)
   password       String           @db.VarChar(255)
   role           auth_role        @default(customer)
-  customer       Customer[]
-  eventorganizer eventorganizer[]
+
+  customer       Customer?
+  eventOrganizer eventOrganizer[]
+
 
   @@id([id, email])
 }
@@ -70,15 +74,15 @@ model event {
 
 model eventorganizer {
   eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
-  auth_id      Int?
+  auth_id      Int?      @unique(map: "auth_id")
   first_name   String    @db.VarChar(255)
   last_name    String?   @db.VarChar(255)
   company_name String    @db.VarChar(255)
   created_at   DateTime  @default(now()) @db.Timestamp(0)
   updated_at   DateTime? @db.Timestamp(0)
-  auth         auth?     @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "eventorganizer_ibfk_1")
+  auth         auth?     @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_rel_id")
 
-  @@index([auth_id], map: "auth_id")
+  @@index([auth_id], map: "fk_auth_eventOrganizer")
 }
 
 
@@ -86,14 +90,16 @@ model eventorganizer {
 model referralCode {
   ref_log_id   Int       @id @unique(map: "ref_log_id") @default(autoincrement())
   rc_provider  Int?
-  amount_Point Int
   created_at   DateTime  @default(now()) @db.Timestamp(0)
   expired_at   DateTime? @db.Timestamp(0)
+  amount_Point Int
   ref_code     Customer? @relation(fields: [rc_provider], references: [customer_id])
 
 
   @@index([rc_provider], map: "rc_provider")
 }
+
+
 
 model transaction {
   id              Int      @id @default(autoincrement())
@@ -118,6 +124,7 @@ enum auth_role {
   customer
   Seller
 }
+
 
 
 model cronLog {
@@ -156,5 +163,6 @@ enum event_category {
   Concert
   Seminar
   Competition
+
 
 }

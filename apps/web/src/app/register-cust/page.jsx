@@ -27,11 +27,11 @@ export default function RegisterCustomer() {
       setOpenToast(true);
 
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/login/login-cust';
       }, 3000);
     } catch (error) {
       setSuccessMessage('');
-      setErrorMessage(`Error ${error}`);
+      setErrorMessage(`Error ${error.response.data}`);
       setOpenToast(true);
     }
   };

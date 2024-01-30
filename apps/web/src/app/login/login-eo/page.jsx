@@ -1,5 +1,6 @@
 'use client';
 import Toaster from '@/components/Toaster';
+import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -12,7 +13,7 @@ export default function LoginPage() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('http://localhost:8000/auth/login', {
+      const res = await axios.post('http://localhost:8000/auth/login', {
         email: email,
         password: password,
       });
@@ -20,12 +21,14 @@ export default function LoginPage() {
       setErrorMessage('');
       setOpenToast(true);
 
+      window.localStorage.setItem('token', res.data.token);
+
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       }, 3000);
     } catch (error) {
       setSuccessMessage('');
-      setErrorMessage(`Error ${error}`);
+      setErrorMessage(`Error ${error.response.data}`);
       setOpenToast(true);
     }
   };
@@ -37,7 +40,7 @@ export default function LoginPage() {
           <div className="text-white">
             <div className="mb-8 flex flex-col items-center">
               <Image src="/logo.png" width="250" height="0" alt="" />
-              <span className="text-gray-300">Enter Login Details</span>
+              <span className="text-gray-300">Enter login details</span>
             </div>
             <form action={handleSubmit}>
               <div className="mb-4 text-lg">
@@ -68,6 +71,14 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
+            <div className="mt-3">
+              <span className="text-gray-300">Not a Organizer ? </span>
+              <a href="/login/login-cust">
+                <span className="text-gray-300 hover:text-green-300">
+                  Login Customer
+                </span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
