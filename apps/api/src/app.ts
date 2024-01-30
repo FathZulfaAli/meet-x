@@ -10,6 +10,9 @@ import cors from 'cors';
 import { PORT } from './config';
 import { AuthRouter } from './routers/auth.router';
 import { CreateEventsRouter } from './routers/events.routers';
+import cron from 'node-cron';
+import { expiredPointsSchedule } from './helpers/expiredPoinrs';
+
 
 export default class App {
   readonly app: Express;
@@ -51,6 +54,10 @@ export default class App {
         next();
       }
     });
+  }
+
+  public dailyTask(): void {
+    expiredPointsSchedule();
   }
 
   public start(): void {
