@@ -2,6 +2,7 @@
 import Brand from '@/components/Brand';
 import Card from '@/components/Card';
 import Unauthorized from '@/components/Unauthorized';
+import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -23,7 +24,7 @@ const Home = () => {
     } catch (error) {
       setIsOpen(true);
       setTimeout(() => {
-        window.location.href = '/login/login-eo';
+        window.location.href = '/login/login-cust';
       }, 3000);
     }
   }

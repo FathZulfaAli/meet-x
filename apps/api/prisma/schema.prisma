@@ -4,8 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
-
+  url      = "mysql://root:root@localhost:3306/meetx_db"
 }
 
 model Customer {
@@ -30,7 +29,7 @@ model auth {
   id       Int       @unique(map: "id") @default(autoincrement())
   email    String    @unique(map: "email") @db.VarChar(255)
   password String    @db.VarChar(255)
-  role     auth_role @default(customer)
+  role     auth_role
 
   customer       Customer[]
   eventOrganizer eventorganizer[]
@@ -49,10 +48,10 @@ model Sample {
 }
 
 model Category {
-  id        Int       @id @default(autoincrement())
+  id        Int            @id @default(autoincrement())
   name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime?      @updatedAt
   events    event_category
 }
 
@@ -78,9 +77,6 @@ model event {
   @@map("event")
 }
 
-
-
-
 model eventorganizer {
   eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
   auth_id      Int?      @unique(map: "auth_id")
@@ -105,8 +101,6 @@ model referralCode {
 
   @@index([rc_provider], map: "rc_provider")
 }
-
-
 
 model transaction {
   id              Int       @id @default(autoincrement())
