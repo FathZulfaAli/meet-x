@@ -31,7 +31,7 @@ export default function RegisterCustomer() {
       }, 3000);
     } catch (error) {
       setSuccessMessage('');
-      setErrorMessage(`Error ${error.response.data}`);
+      setErrorMessage(`Error ${error.errors.msg}`);
       setOpenToast(true);
     }
   };

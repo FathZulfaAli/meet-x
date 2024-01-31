@@ -24,7 +24,7 @@ export class AuthRouter {
       this.authController.registEo,
     );
     this.router.post('/login', this.authController.login);
-    this.router.get('/get-role', this.authController.getRole);
+    this.router.post('/get-role', this.authController.getRole);
   }
 
   getRouter(): Router {

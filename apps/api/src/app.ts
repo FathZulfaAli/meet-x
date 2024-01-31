@@ -10,10 +10,8 @@ import cors from 'cors';
 import { PORT } from './config';
 import { AuthRouter } from './routers/auth.router';
 import { CreateEventsRouter } from './routers/events.routers';
-import cron from 'node-cron';
-import { expiredPointsSchedule } from './helpers/expiredPoinrs';
 import { TransactionsRouter } from './routers/transactions.router';
-
+import { expiredPointsSchedule } from './helpers/expiredPoints';
 
 export default class App {
   readonly app: Express;
@@ -39,7 +37,6 @@ export default class App {
     this.app.use('/auth', authRouter.getRouter());
     this.app.use('/buy', transactionsRouter.getRouter());
     this.app.use('/events', createEventsRouter.getRouter());
-
   }
 
   private handleError(): void {
@@ -61,13 +58,10 @@ export default class App {
     });
   }
 
-  public dailyTask(): void {
-    expiredPointsSchedule();
-  }
-
   public start(): void {
     this.app.listen(PORT, () => {
       console.log(`  ➜  [API] Local:   http://localhost:${PORT}/`);
     });
+    expiredPointsSchedule();
   }
 }
