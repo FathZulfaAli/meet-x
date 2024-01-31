@@ -39,7 +39,7 @@ export default function LoginPage() {
         <div className="rounded-xl bg-gray-800 bg-opacity-50 px-16 py-10 shadow-lg backdrop-blur-md max-sm:px-8">
           <div className="text-white">
             <div className="mb-8 flex flex-col items-center">
-              <Image src="/logo.png" width="250" height="0" alt="" />
+              <Image src="/logo.png" width="250" height="200" alt="Hero" />
               <span className="text-gray-300">Enter login details</span>
             </div>
             <form action={handleSubmit}>
