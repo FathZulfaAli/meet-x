@@ -10,8 +10,9 @@ import cors from 'cors';
 import { PORT } from './config';
 import { AuthRouter } from './routers/auth.router';
 import { CreateEventsRouter } from './routers/events.routers';
+import { expiredPointsSchedule } from './helpers/expiredPoinrs';
 import { TransactionsRouter } from './routers/transactions.router';
-import { expiredPointsSchedule } from './helpers/expiredPoints';
+import { GetEventByIdRouter } from './routers/getevent.router';
 
 export default class App {
   readonly app: Express;
@@ -33,10 +34,13 @@ export default class App {
     const authRouter = new AuthRouter();
     const transactionsRouter = new TransactionsRouter();
     const createEventsRouter = new CreateEventsRouter();
+    const getEventByIdRouter = new GetEventByIdRouter();
 
     this.app.use('/auth', authRouter.getRouter());
     this.app.use('/buy', transactionsRouter.getRouter());
     this.app.use('/events', createEventsRouter.getRouter());
+    this.app.use('/events', getEventByIdRouter.getRouter());
+
   }
 
   private handleError(): void {

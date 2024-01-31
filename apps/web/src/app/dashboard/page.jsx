@@ -4,6 +4,7 @@ import axios from 'axios';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
+
 export default function Dashboard() {
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
@@ -29,5 +30,6 @@ export default function Dashboard() {
     <>
       <Unauthorized showModal={isOpen} />
     </>
+
   );
 }

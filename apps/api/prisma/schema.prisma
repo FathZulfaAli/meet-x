@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:root@localhost:3306/meetx_db"
+  url      = env("DATABASE_URL")
+
 }
 
 model Customer {
@@ -47,6 +48,14 @@ model Sample {
   @@map("samples")
 }
 
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  events    event_category
+}
+
 model event {
   id          Int            @id @default(autoincrement())
   tittle      String
@@ -69,6 +78,9 @@ model event {
   @@map("event")
 }
 
+
+
+
 model eventorganizer {
   eo_id        Int       @id @unique(map: "eo_id") @default(autoincrement())
   auth_id      Int?      @unique(map: "auth_id")
@@ -80,7 +92,7 @@ model eventorganizer {
   auth         auth?     @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_rel_id")
 
   @@index([auth_id], map: "fk_auth_eventOrganizer")
-  @@map("eventorganizer")
+  @@map("eventOrganizer")
 }
 
 model referralCode {
@@ -93,6 +105,8 @@ model referralCode {
 
   @@index([rc_provider], map: "rc_provider")
 }
+
+
 
 model transaction {
   id              Int       @id @default(autoincrement())

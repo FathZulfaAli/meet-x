@@ -12,7 +12,7 @@ const Card = () => {
   console.log('terrrr', event);
   async function getEvent(slug) {
     try {
-      const res = await axios.get('http://localhost:8000/events/list-events', {
+      const res = await axios.get('http://localhost:8000/events', {
         params: {
           'fields.slug': slug,
           limit: 1,
@@ -28,10 +28,6 @@ const Card = () => {
 
   return (
     <div class="px-6 py-12 text-center bg-white bg-#319a94 md:px-12 lg:text-left">
-      {/* <!-- component --> */}
-      {/* <!-- component -->
-<!-- Create By Joker Banny --> */}
-
       <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
         {event.map((data, index) => (
           <div
