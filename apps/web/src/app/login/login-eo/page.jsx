@@ -40,6 +40,7 @@ export default function LoginPage() {
           <div className="text-white">
             <div className="mb-8 flex flex-col items-center">
               <Image src="/logo.png" width="250" height="200" alt="Hero" />
+              <h1>Seller</h1>
               <span className="text-gray-300">Enter login details</span>
             </div>
             <form action={handleSubmit}>

@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
+import Unauthorized from '@/components/Unauthorized';
 
 const Create = () => {
   const price_type_enum = { FREE: 'FREE', PAID: 'PAID' };
@@ -22,6 +23,27 @@ const Create = () => {
   const [seats, setseats] = useState('');
   const [terms, setterms] = useState('');
   const [time, settime] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+  async function getProfile() {
+    try {
+      const token = window.localStorage.getItem('token');
+      const res = await axios.post('http://localhost:8000/auth/get-role', {
+        token: token,
+      });
+      if (res.data.role === 'customer') {
+        throw new Error('Unauthorized');
+      }
+    } catch (error) {
+      setIsOpen(true);
+      setTimeout(() => {
+        window.location.href = '/login/login-eo';
+      }, 3000);
+    }
+  }
 
   const handleSubmit = async () => {
     // console.log(place)
@@ -57,6 +79,7 @@ const Create = () => {
   return (
     // <!-- component -->
     <>
+      <Unauthorized showModal={isOpen} />
       <section class="max-w-4xl p-6 mx-auto bg-teal-600 rounded-md shadow-md dark:bg-gray-800 mt-20 mb-20">
         <h1 class="text-xl font-bold text-white capitalize dark:text-white">
           tittle
@@ -105,7 +128,7 @@ const Create = () => {
                       d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
                       strokeWidth="2"
                       strokeLinecap="round"
-                      strokeLinejoin="round"
+                      strokeinejoin="round"
                     />
                   </svg>
                   <div class="flex text-sm text-gray-600">

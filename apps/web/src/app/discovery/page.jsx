@@ -1,8 +1,34 @@
+'use client';
 import Card from '@/components/Card';
+import Unauthorized from '@/components/Unauthorized';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 const Discovery = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+  async function getProfile() {
+    try {
+      const token = window.localStorage.getItem('token');
+      const res = await axios.post('http://localhost:8000/auth/get-role', {
+        token: token,
+      });
+      if (res.data.role === 'Seller') {
+        throw new Error('Unauthorized');
+      }
+    } catch (error) {
+      setIsOpen(true);
+      setTimeout(() => {
+        window.location.href = '/login/login-cust';
+      }, 3000);
+    }
+  }
   return (
     <>
+      <Unauthorized showModal={isOpen} />
       <div className="">
         <div className="flex bg-white">
           <div className="md:flex w-2/5 md:w-1/4 bg-white border-r hidden">
