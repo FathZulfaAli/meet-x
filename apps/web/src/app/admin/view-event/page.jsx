@@ -9,7 +9,6 @@ export default function Details({ params }) {
   useEffect(() => {
     getEvent();
   }, []);
-  console.log('terrrr', event);
   async function getEvent(slug) {
     try {
       const res = await axios.get('http://localhost:8000/events/list-events', {
@@ -19,7 +18,6 @@ export default function Details({ params }) {
           content_type: 'events',
         },
       });
-      console.log(res);
       setEvents(res.data.getEvents);
     } catch (error) {
       throw new Error('Failed to fetch event data');
