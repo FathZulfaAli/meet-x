@@ -22,7 +22,7 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.log(error);
-      setIsOpen(false);
+      setIsOpen(true);
     }
   }
 
