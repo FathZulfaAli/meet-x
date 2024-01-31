@@ -2,8 +2,20 @@ import { NextFunction, Request, Response } from 'express';
 import { compare, genSalt, hash } from 'bcrypt';
 import { prisma } from '../prisma';
 import { customAlphabet } from 'nanoid';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import Cookies from 'js-cookie';
+import fs from 'fs';
+import path from 'path';
+import handlebars from 'handlebars';
+import { transporter } from '@/helpers/nodemailer';
+
+declare global {
+  namespace Express {
+    interface Request {
+      dataUser: any;
+    }
+  }
+}
 
 export class AuthController {
   async registerCustomer(req: Request, res: Response, next: NextFunction) {
@@ -44,11 +56,11 @@ export class AuthController {
             ref_code: req.body.used_ref_code,
           },
         });
-        isDiscount = true; //if used code is exist => set isDiscount true
-
         if (!checkUsedCode) {
           throw new Error("Referral number you provide doesn't exist");
         }
+
+        isDiscount = true; //if used code is exist => set isDiscount true
       }
 
       const uniqueCode = await generateUniqueCode();
@@ -109,6 +121,21 @@ export class AuthController {
             expired_at: pointExpired,
           },
         });
+
+        const walletBalance = custRefId?.amouth_points ?? 0;
+        const addNewPoint = walletBalance + 10000;
+
+        if (custRefId?.customer_id) {
+          await prisma.customer.update({
+            where: {
+              customer_id: addPoints?.rc_provider,
+            },
+            data: {
+              amouth_points: addNewPoint,
+            },
+          });
+        }
+
         response = {
           success: true,
           result: { auth: newUser, profile: profileUser, ref: addPoints },
@@ -119,6 +146,26 @@ export class AuthController {
           result: { auth: newUser, profile: profileUser },
         };
       }
+
+      // welcome email
+      const templateMail = path.join(
+        __dirname,
+        '../templates',
+        'register-welcome.hbs',
+      );
+      const templateSource = fs.readFileSync(templateMail, 'utf-8');
+      const compileTemplate = handlebars.compile(templateSource);
+
+      let whichName = first_name;
+      if (last_name) {
+        whichName = last_name;
+      }
+      await transporter.sendMail({
+        from: 'MeetX',
+        to: email,
+        subject: 'Thank you for registering',
+        html: compileTemplate({ name: whichName }),
+      });
 
       return res.status(201).send({
         success: true,
@@ -154,7 +201,7 @@ export class AuthController {
 
       const authId = newUser.id;
 
-      const profileEo = await prisma.eventOrganizer.create({
+      const profileEo = await prisma.eventorganizer.create({
         data: {
           auth: {
             connect: {
@@ -196,7 +243,7 @@ export class AuthController {
           },
         });
       } else if (isValidUser.role === 'Seller') {
-        getProfile = await prisma.eventOrganizer.findUnique({
+        getProfile = await prisma.eventorganizer.findUnique({
           where: {
             auth_id: authId,
           },
@@ -231,12 +278,18 @@ export class AuthController {
   }
   async getRole(req: Request, res: Response, next: NextFunction) {
     try {
+      const getToken = req.body.token;
+      if (!getToken) {
+        throw new Error('Please login first');
+      }
+      const translatedToken = verify(getToken, 'JCWDOL12-1');
+      req.dataUser = translatedToken;
       const getRole = await prisma.auth.findUnique({
         where: {
-          email: req.body.email,
+          email: req.dataUser.email,
         },
       });
-      return res.status(201).send({ role: getRole?.role });
+      return res.status(200).send({ role: getRole?.role });
     } catch (error) {
       next(error);
     }

@@ -7,7 +7,6 @@ const main = async () => {
   };
   const app = new App();
   app.start();
-  app.dailyTask();
 };
 
 main();

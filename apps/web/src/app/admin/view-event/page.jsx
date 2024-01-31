@@ -254,9 +254,12 @@ export default function Details({ params }) {
                   <div className="grid grid-cols-6 p-5 gap-y-2">
                     {/* <!-- Profile Picture --> */}
                     <div>
-                      <img
+                      <Image
+                        alt=""
                         src="https://picsum.photos/seed/2/200/200"
-                        class="max-w-16 max-h-16 rounded-full"
+                        class="rounded-full"
+                        width={25}
+                        height={25}
                       />
                     </div>
 

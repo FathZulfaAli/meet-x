@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:root@localhost:3306/meetx_db"
 }
 
 model Customer {
@@ -65,6 +65,8 @@ model event {
   createAt    DateTime       @default(now())
   updatedAt   DateTime?
   transaction transaction[]
+
+  @@map("event")
 }
 
 model eventorganizer {
@@ -78,31 +80,32 @@ model eventorganizer {
   auth         auth?     @relation(fields: [auth_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_rel_id")
 
   @@index([auth_id], map: "fk_auth_eventOrganizer")
+  @@map("eventorganizer")
 }
 
 model referralCode {
   ref_log_id   Int       @id @unique(map: "ref_log_id") @default(autoincrement())
-  rc_provider  Int?
+  rc_provider  Int
   created_at   DateTime  @default(now()) @db.Timestamp(0)
   expired_at   DateTime? @db.Timestamp(0)
   amount_Point Int
-  ref_code     Customer? @relation(fields: [rc_provider], references: [customer_id])
+  ref_code     Customer  @relation(fields: [rc_provider], references: [customer_id])
 
   @@index([rc_provider], map: "rc_provider")
 }
 
 model transaction {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   EventId         Int
   customer_id     Int
-  date            DateTime
   amountPaid      Int?
   discountApplied Int?
   pointUsed       Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime
-  event           event    @relation(fields: [EventId], references: [id], map: "Transaction_EventId_fkey")
-  customer        Customer @relation(fields: [customer_id], references: [customer_id], map: "Transaction_customer_id_fkey")
+  total_items     Int
+  event_tickets   String
+  createdAt       DateTime  @default(now())
+  event           event?    @relation(fields: [EventId], references: [id], map: "Transaction_EventId_fkey")
+  customer        Customer? @relation(fields: [customer_id], references: [customer_id], map: "Transaction_customer_id_fkey")
 
   @@index([EventId], map: "Transaction_EventId_fkey")
   @@index([customer_id], map: "Transaction_customer_id_fkey")
