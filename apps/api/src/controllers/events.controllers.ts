@@ -32,7 +32,7 @@ export class CreateEventsController {
   async getEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const getEvents = await prisma.event.findMany();
-      return res.status(200).send({ getEvents });
+      return res.status(200).json(getEvents);
     } catch (error) {
       next(error);
     }

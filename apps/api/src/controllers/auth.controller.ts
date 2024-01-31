@@ -154,7 +154,7 @@ export class AuthController {
 
       const authId = newUser.id;
 
-      const profileEo = await prisma.eventOrganizer.create({
+      const profileEo = await prisma.eventorganizer.create({
         data: {
           auth: {
             connect: {
@@ -196,7 +196,7 @@ export class AuthController {
           },
         });
       } else if (isValidUser.role === 'Seller') {
-        getProfile = await prisma.eventOrganizer.findUnique({
+        getProfile = await prisma.eventorganizer.findUnique({
           where: {
             auth_id: authId,
           },
