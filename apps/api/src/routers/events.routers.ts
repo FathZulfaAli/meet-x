@@ -13,11 +13,7 @@ export class CreateEventsRouter {
   }
 
   private initializeRouter(): void {
-    this.router.post(
-      '/create-event',
-      verifyTokenEo,
-      this.createEvents.createEvent,
-    );
+    this.router.post('/create-event', this.createEvents.createEvent);
     this.router.get('/list-events', this.createEvents.getEvents);
   }
 
